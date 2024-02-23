@@ -1,0 +1,485 @@
+module game1 (clk,reset,left,fly,fire,redsegout,greensegout,scanout,sevenSegout,sevenScanout,buzz);
+input clk,reset,left,fly,fire;
+output reg[7:0] redsegout;
+output reg[7:0] greensegout;
+output reg[7:0] scanout;
+output reg[7:0] sevenSegout;
+output reg[2:0] sevenScanout;
+output buzz;
+reg[14:0] tone = 0;
+
+integer random1 = 0;		
+integer random2 = 0;	
+
+integer test =0;
+
+reg [5:0]s;
+reg [5:0] p[0:3] ;
+
+reg[25:0] cnt_scan;
+reg[2:0] x=3, y=7;
+integer barrierX = 7;
+integer passedBarrier = 0;
+integer barrierType = 1;
+
+reg[7:0] num0 = 8'b00111111;
+reg[7:0] num1 = 8'b00000110;
+reg[7:0] num2 = 8'b01011011;
+reg[7:0] num3 = 8'b01001111;
+reg[7:0] num4 = 8'b01100110;
+reg[7:0] num5 = 8'b01101101;
+reg[7:0] num6 = 8'b01111101;
+reg[7:0] num7 = 8'b00000111;
+reg[7:0] num8 = 8'b01111111;
+reg[7:0] num9 = 8'b01101111;
+
+reg[7:0] barrierType1 = 8'b11100011;
+reg[7:0] barrierType2 = 8'b11110001;
+reg[7:0] barrierType3 = 8'b10001111;
+reg[7:0] barrierType4 = 8'b11000111;
+
+
+integer dropDelay;
+integer beatDelay = 0;
+integer beat = 0;
+integer gameSpeed = 01250000;
+reg clk1;
+reg [63:0] redDot ;
+reg [63:0] greenDot;
+reg isGameOver = 1'b0;
+reg isGameOverSound = 1'b0;
+integer backgroundBeat = 0;
+integer backgroundBeatDelay = 0;
+integer flashCounter = 0;
+reg isSpeedUp = 1'b0;
+
+toneOut speaker(clk,tone,buzz);
+
+//------------------ clock running -----------------------
+always@(posedge clk )
+begin
+cnt_scan<=cnt_scan+1;
+	if (cnt_scan == gameSpeed) begin
+		cnt_scan <=0;
+		clk1 = ~clk1;
+	end
+end
+
+
+
+always @(*)
+sevenScanout <= cnt_scan[14:13];
+
+
+//---------modify display digit ----------
+always @(posedge clk1 ,posedge reset)
+begin
+if (reset == 1)
+begin
+	isGameOver = 1'b0;
+	dropDelay=0;
+	x = 1;
+	y = 4;
+	redDot = 64'b00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000;
+	greenDot = 64'b00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000;
+	gameSpeed = 01250000;
+	greenDot[x+8*y] = 1'b1;
+	barrierX = 7;
+	passedBarrier = 0;
+	redDot[barrierX] = 1'b1;
+	redDot[barrierX+8] = 1'b1;
+	redDot[barrierX+8*2] = 1'b1;
+	redDot[barrierX+8*5] = 1'b1;
+	redDot[barrierX+8*6] = 1'b1;
+	redDot[barrierX+8*7] = 1'b1;
+	tone = 0;
+	beat = 0;
+	backgroundBeat = 0;
+	flashCounter = 0;
+	isSpeedUp = 1'b0;
+end
+else 
+begin
+	if(isGameOver)
+	begin
+		if(flashCounter < 5)
+		begin
+			redDot = 64'hFFFF_FFFF_FFFF_FFFF;
+			greenDot = 64'hFFFF_FFFF_FFFF_FFFF;
+		end
+		else
+		begin
+			redDot = 64'h00241800a542a500;
+			greenDot = 64'h00241800a542a500;
+		end
+		isGameOverSound = 1'b1;
+		case(beat)
+			0:
+				tone = 7162;
+			1:
+				tone = 5060;
+			2:
+				tone = 5682;
+			3:
+				tone = 6378;
+			4:
+				tone = 7162;
+			default:
+				tone = 0;
+		endcase
+	
+		if(beatDelay > 0)
+		begin 
+			if(flashCounter < 5)
+			begin
+				redDot = redDot & 64'h0000_0000_0000_0000	;
+				greenDot = greenDot & 64'h0000_0000_0000_0000;
+				flashCounter = flashCounter + 1;
+			end
+
+			beat = beat + 1;
+			beatDelay = 0;
+		end
+		else
+		begin
+			beatDelay = beatDelay + 1;
+		end
+
+end
+else
+begin
+
+
+	//character move
+	if (fly == 0) 				
+	begin
+		redDot = redDot & 64'h0000_0000_0000_0000	;
+		greenDot = greenDot & 64'h0000_0000_0000_0000;
+		dropDelay = dropDelay+1;
+		tone = 6000;
+		if(dropDelay > 1)
+		begin
+			tone = 0;
+			y = y - 1;
+			dropDelay=0;
+		end
+	end
+	else
+	begin
+		redDot = redDot & 64'h0000_0000_0000_0000	;
+		greenDot = greenDot & 64'h0000_0000_0000_0000;
+		dropDelay = dropDelay + 1;
+		tone = 0;
+		if(dropDelay>1)
+		begin
+			y = y + 1;
+			dropDelay=0;
+		end
+	end
+	
+	if(left == 0)
+	begin 
+		barrierX = barrierX - 1 ;
+		if(barrierX == x)
+		begin
+			if(redDot[x+8*y]== 1'b1)
+			begin
+				isGameOver = 1'b1;
+			end
+			else
+			begin
+				passedBarrier = passedBarrier + 1;
+			end
+		end
+	end
+	
+
+
+
+
+	//if character touch edge
+	if(y <= 0||y>=7)
+	begin
+		isGameOver = 1'b1;
+	end
+
+//-----------------------barrier
+
+//barrier movement
+	if(barrierX > 0 ) 
+	begin
+		barrierX = barrierX-1;
+	end
+	else
+	begin
+		barrierX = 7;
+		random1 = random1 + 1;
+		barrierType = (barrierType + random1)  % 4;
+	end
+	
+
+	//barrier display
+	if(barrierType == 1 )
+	begin
+		redDot[barrierX+8*0] = barrierType1[0];
+		redDot[barrierX+8*1] = barrierType1[1];
+		redDot[barrierX+8*2] = barrierType1[2];
+		redDot[barrierX+8*3] = barrierType1[3];
+		redDot[barrierX+8*4] = barrierType1[4];
+		redDot[barrierX+8*5] = barrierType1[5];
+		redDot[barrierX+8*6] = barrierType1[6];
+		redDot[barrierX+8*7] = barrierType1[7];
+	end
+	else if(barrierType == 2)
+	begin
+		redDot[barrierX+8*0] = barrierType2[0];
+		redDot[barrierX+8*1] = barrierType2[1];
+		redDot[barrierX+8*2] = barrierType2[2];
+		redDot[barrierX+8*3] = barrierType2[3];
+		redDot[barrierX+8*4] = barrierType2[4];
+		redDot[barrierX+8*5] = barrierType2[5];
+		redDot[barrierX+8*6] = barrierType2[6];
+		redDot[barrierX+8*7] = barrierType2[7];
+	end
+	else if(barrierType == 3 )
+	begin
+		redDot[barrierX+8*0] = barrierType3[0];
+		redDot[barrierX+8*1] = barrierType3[1];
+		redDot[barrierX+8*2] = barrierType3[2];
+		redDot[barrierX+8*3] = barrierType3[3];
+		redDot[barrierX+8*4] = barrierType3[4];
+		redDot[barrierX+8*5] = barrierType3[5];
+		redDot[barrierX+8*6] = barrierType3[6];
+		redDot[barrierX+8*7] = barrierType3[7];
+	end
+	else if(barrierType == 0 )
+	begin
+		redDot[barrierX+8*0] = barrierType4[0];
+		redDot[barrierX+8*1] = barrierType4[1];
+		redDot[barrierX+8*2] = barrierType4[2];
+		redDot[barrierX+8*3] = barrierType4[3];
+		redDot[barrierX+8*4] = barrierType4[4];
+		redDot[barrierX+8*5] = barrierType4[5];
+		redDot[barrierX+8*6] = barrierType4[6];
+		redDot[barrierX+8*7] = barrierType4[7];
+	end
+	//------------show bird in X=1
+	
+	if(barrierX == x)
+	begin
+		if(redDot[x+8*y]== 1'b1)
+		begin
+			isGameOver = 1'b1;
+		end
+		else
+		begin
+			passedBarrier = passedBarrier + 1;
+		end
+	end
+	
+	/*
+		case(backgroundBeat)
+			0:
+				tone = 7162;
+			1:
+				tone = 5060;
+			2:
+				tone = 5682;
+			3:
+				tone = 6378;
+			4:
+				tone = 7162;
+			default:
+				backgroundBeat = 0;
+		endcase
+		
+		if(backgroundBeatDelay > 0)
+		begin 
+			backgroundBeat = backgroundBeat + 1;
+			backgroundBeatDelay = 0;
+		end
+		else
+		begin
+			backgroundBeatDelay = backgroundBeatDelay + 1;
+		end
+	*/
+
+	
+		greenDot[x+8*y] = 1'b1;
+	
+		end
+	end
+end
+
+//-----------scan and display 7-SEG-------------
+
+always@(cnt_scan[13:11])
+begin
+	case(cnt_scan[13:11])
+		3'b000 :
+		scanout = 8'b0000_0001;
+		3'b001 :
+		scanout = 8'b0000_0010;
+		3'b010 :
+		scanout = 8'b0000_0100;
+		3'b011 :
+		scanout = 8'b0000_1000;
+		3'b100 :
+		scanout = 8'b0001_0000;
+		3'b101 :
+		scanout = 8'b0010_0000;
+		3'b110 :
+		scanout = 8'b0100_0000;
+		3'b111 :
+		scanout = 8'b1000_0000;
+		default :
+		scanout = 8'b0000_0001;
+	endcase
+end
+
+always@(scanout) 
+begin
+	case(scanout)
+		8'b0000_0001:
+		redsegout=redDot[63:56];
+		8'b0000_0010:
+		redsegout=redDot[55:48];
+		8'b0000_0100:
+		redsegout=redDot[47:40];
+		8'b0000_1000:
+		redsegout=redDot[39:32];
+		8'b0001_0000:
+		redsegout=redDot[31:24];
+		8'b0010_0000:
+		redsegout=redDot[23:16];
+		8'b0100_0000:
+		redsegout=redDot[15:8];
+		8'b1000_0000:
+		redsegout=redDot[7:0];
+		default:
+		redsegout=8'b11111111;
+	endcase
+end
+//greenDot output
+always@(scanout) 
+begin
+	case(scanout)
+		8'b0000_0001:
+		greensegout=greenDot[63:56];
+		8'b0000_0010:
+		greensegout=greenDot[55:48];
+		8'b0000_0100:
+		greensegout=greenDot[47:40];
+		8'b0000_1000:
+		greensegout=greenDot[39:32];
+		8'b0001_0000:
+		greensegout=greenDot[31:24];
+		8'b0010_0000:
+		greensegout=greenDot[23:16];
+		8'b0100_0000:
+		greensegout=greenDot[15:8];
+		8'b1000_0000:
+		greensegout=greenDot[7:0];
+		default:
+		greensegout=8'b11111111;
+	endcase
+end
+
+//---------------------------------------------------------------------------------------------
+
+ //-----------scan and display 7-SEG-------------
+
+ always@(sevenScanout) //
+ begin
+ case(sevenScanout)
+ 5:
+	sevenSegout={8'b00000000};	
+ 4:
+	sevenSegout={8'b00000000};
+ 3:
+	case(passedBarrier%10)
+	0:
+	sevenSegout={num0[7:0]};
+	1:
+	sevenSegout={num1[7:0]};
+	2:
+	sevenSegout={num2[7:0]};
+	3:
+	sevenSegout={num3[7:0]};
+	4:
+	sevenSegout={num4[7:0]};
+	5:
+	sevenSegout={num5[7:0]};
+	6:
+	sevenSegout={num6[7:0]};
+	7:
+	sevenSegout={num7[7:0]};
+	8:
+	sevenSegout={num8[7:0]};
+	9:
+	sevenSegout={num9[7:0]};
+	default:
+	sevenSegout={8'b00000000};
+	endcase
+ 2:
+	case(passedBarrier/10)
+	0:
+	sevenSegout={num0[7:0]};
+	1:
+	sevenSegout={num1[7:0]};
+	2:
+	sevenSegout={num2[7:0]};
+	3:
+	sevenSegout={num3[7:0]};
+	4:
+	sevenSegout={num4[7:0]};
+	5:
+	sevenSegout={num5[7:0]};
+	6:
+	sevenSegout={num6[7:0]};
+	7:
+	sevenSegout={num7[7:0]};
+	8:
+	sevenSegout={num8[7:0]};
+	9:
+	sevenSegout={num9[7:0]};
+	default:
+	sevenSegout={8'b00000000};
+	endcase
+ 1:
+ sevenSegout={8'b00000000};		
+ 0:
+ sevenSegout={8'b00000000};		
+ default:
+ sevenSegout=0;
+ endcase
+ end
+
+endmodule
+
+
+module toneOut (clk, toneIn, buzzOut );
+input clk; // 10MHz
+input [14:0] toneIn;
+output reg buzzOut;
+
+reg clk1;
+reg [4:0] clkCount;
+reg [14:0] i=0;
+
+always @ (posedge clk)
+begin
+clk1 <= ~clk1; // 10MHz / 2 = 5MHz
+end
+
+always @(posedge clk1) // clk1 = 5MHz
+begin
+if (i == toneIn)
+begin
+i <= 0;
+buzzOut <= !buzzOut;
+end
+else
+i<= i + 1;
+end
+endmodule
