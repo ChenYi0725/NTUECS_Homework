@@ -1,0 +1,3 @@
+flappy_bird.txt 的內容直接貼到verilog檔裡面
+機器使用的是lp2900
+腳位按照圖片設定即可
