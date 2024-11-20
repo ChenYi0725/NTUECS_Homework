@@ -1,0 +1,76 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/mainLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Radio Buttons for Background Color -->
+    <RadioGroup
+        android:id="@+id/radioGroupColors"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/radioRed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="紅色" />
+
+        <RadioButton
+            android:id="@+id/radioGreen"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="綠色" />
+
+        <RadioButton
+            android:id="@+id/radioBlue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="藍色" />
+    </RadioGroup>
+
+    <!-- CheckBoxes for Dishes -->
+    <CheckBox
+        android:id="@+id/checkBoxDish1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="菜1" />
+    <CheckBox
+        android:id="@+id/checkBoxDish2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="菜2" />
+    <CheckBox
+        android:id="@+id/checkBoxDish3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="菜3" />
+    <CheckBox
+        android:id="@+id/checkBoxDish4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="菜4" />
+    <CheckBox
+        android:id="@+id/checkBoxDish5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="菜5" />
+
+    <!-- Button to Checkout -->
+    <Button
+        android:id="@+id/btnCheckout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="結帳" />
+
+    <!-- TextView to Show Price -->
+    <TextView
+        android:id="@+id/textViewPrice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="價格：" />
+
+</LinearLayout>

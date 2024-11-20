@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">運動能量消耗計算機</string>
+    <string-array name="activity_types">
+        <item>慢跑</item>
+        <item>腳踏車</item>
+        <item>游泳</item>
+    </string-array>
+</resources>
