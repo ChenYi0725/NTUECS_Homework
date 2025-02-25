@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Brain Teaser</string>
+    <string-array name="questions">
+        <item>ประตูอะไรที่ปิดไม่ได้?</item>
+        <item>อะไรที่ไม่มีใครอยากกิน?</item>
+        <item>แตงอะไรที่กินไม่ได้?</item>
+        <item>ผ้าอะไรที่ตัดไม่ขาด?</item>
+        <item>หนูอะไรที่รักความสะอาดที่สุด?</item>
+        <item>ขโมยอะไรที่ไม่ผิดกฎหมาย?</item>
+    </string-array>
+    <string-array name="answers">
+        <item>ประตูประตู</item>
+        <item>ขาดทุน</item>
+        <item>คนโง่</item>
+        <item>น้ำตก</item>
+        <item>กรมควบคุมมลพิษ</item>
+        <item>เสียงหัวเราะ</item>
+    </string-array>
+</resources>
